@@ -32,24 +32,32 @@ function ENT:Initialize()
             ent.LerpAng = ent.LerpAng or angles
             if IsValid(ent) then
                 if useCam == 1 then
-                    local pos = ent:GetPos() +(angles:Forward() *-300) +saw:GetUp() *60
-                    local Trace = {}
-                    Trace.start = ent:GetPos() +(angles:Forward() *-100)
-                    Trace.endpos = pos
-                    Trace.filter = {ply,ent,saw}
-                    local tr = util.TraceLine(Trace)
-                    if tr.Hit then	
-                        pos = tr.HitPos
+                    if ent.GetTPData then
+                        position, ang = ent:GetTPData(ply, position, angles, saw)
+                    else
+                        local pos = ent:GetPos() +(angles:Forward() *-300) +saw:GetUp() *60
+                        local Trace = {}
+                        Trace.start = ent:GetPos() +(angles:Forward() *-100)
+                        Trace.endpos = pos
+                        Trace.filter = {ply,ent,saw}
+                        local tr = util.TraceLine(Trace)
+                        if tr.Hit then	
+                            pos = tr.HitPos
+                        end
+                        position = pos
                     end
-                    position = pos
                 elseif useCam == 2 then
-                    local pos = saw:GetPos()
-                    local ang = saw:GetAngles()
-                    ang.p = angles.p
-                    ang.y = angles.y
-                    angles = ang
-                    pos = pos +saw:GetForward() *50 +saw:GetUp() *-20
-                    position = pos
+                    if ent.GetFPData then
+                        position, ang = ent:GetFPData(ply, position, angles, saw)
+                    else
+                        local pos = saw:GetPos()
+                        local ang = saw:GetAngles()
+                        ang.p = angles.p
+                        ang.y = angles.y
+                        angles = ang
+                        pos = pos +saw:GetForward() *50 +saw:GetUp() *-20
+                        position = pos
+                    end
                 end
 
                 ent.LerpView = useCam == 2 && position or LerpVector(FT, ent.LerpView, position)

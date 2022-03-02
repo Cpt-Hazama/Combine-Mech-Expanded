@@ -123,24 +123,34 @@ ENT.ShieldSprite = NULL
 
 --New
 ENT.MechModel = "models/CM/Cmbnmch.mdl"
+ENT.MoveSpeed = 100
+
+ENT.RocketDelay = 1
+ENT.GrenadeDelay = 0.25
+ENT.GrenadeDelayHeated = 4
+ENT.MissileStormDelay = 20
+ENT.MachineGunDelay = 0.05
+ENT.MachineGunDelayHeated = 2
+ENT.MachineGunHeatDecay = 5
+ENT.ScreamerDelay = 15
+ENT.LaserDelay = 4
+ENT.LaserFireDelay = 1
 
 ------------------------------------VARIABLES END
-function ENT:SpawnFunction(ply, tr)
- 	if (!tr.Hit) then return end 
- 	 
+function ENT:SpawnFunction(ply,tr)
+ 	if (!tr.Hit) then return end
+
  	local SpawnPos = tr.HitPos
- 	 
-	local ent = ents.Create("sent_combineMech")	
-	ent:SetPos(SpawnPos) 
+	local ent = ents.Create(self.ClassName)
+	ent:SetPos(SpawnPos)
+	-- ent:SetAngles(Angle(0,ply:GetAimVector():Angle().y,0))
  	ent:Spawn()
- 	ent:Activate() 
+ 	ent:Activate()
 	self.User = NULL
 	ent:FixPropProtection(ply)
-	
 	ent:SetUser(ply)
-	
-	return ent 
-	
+
+	return ent
 end
 
 function ENT:InitializeConVars()
@@ -159,6 +169,21 @@ function ENT:InitializeConVars()
 	self.maxFlyHeight = GetConVar("sv_combinemech_maxhoverheight"):GetInt() or 1000
 end
 
+function ENT:InitializeSprite()
+	self.ShieldSprite = ents.Create("env_sprite")
+	self.ShieldSprite:SetPos(self:GetPos() +Vector(-64,0,50))
+	self.ShieldSprite:SetKeyValue("renderfx", "14")
+	self.ShieldSprite:SetKeyValue("model", "sprites/glow1.vmt")
+	self.ShieldSprite:SetKeyValue("scale","0.5")
+	self.ShieldSprite:SetKeyValue("spawnflags","1")
+	self.ShieldSprite:SetKeyValue("angles","0 0 0")
+	self.ShieldSprite:SetKeyValue("rendermode","9")
+	self.ShieldSprite:SetKeyValue("renderamt","255")
+	self.ShieldSprite:SetKeyValue("rendercolor", "0 255 0")				
+	self.ShieldSprite:Spawn()	
+	self.ShieldSprite:SetParent(self.keepUpRightProp)
+end
+
 function ENT:Initialize()
 	self:SetModel("models/dav0r/hoverball.mdl")
 	self:PhysicsInit(SOLID_VPHYSICS)
@@ -173,6 +198,12 @@ function ENT:Initialize()
 	self.User = NULL
 
 	self:InitializeConVars()
+
+	if !util.IsValidModel(self.MechModel) then
+		Entity(1):ChatPrint("Missing Mech Model, Removing...")
+		self:Remove()
+		return
+	end
 	
 	--Spawning the mech ragdoll
 	self.MechRagdoll = ents.Create("prop_ragdoll") 
@@ -223,18 +254,7 @@ function ENT:Initialize()
 	constraint.Weld(self.MechRagdoll, self.MechUserEnt, 0, 0, 0, true)
 	
 	--Shield sprite
-	self.ShieldSprite = ents.Create("env_sprite");
-	self.ShieldSprite:SetPos(self:GetPos() +Vector(-64,0,50));
-	self.ShieldSprite:SetKeyValue("renderfx", "14")
-	self.ShieldSprite:SetKeyValue("model", "sprites/glow1.vmt")
-	self.ShieldSprite:SetKeyValue("scale","0.5")
-	self.ShieldSprite:SetKeyValue("spawnflags","1")
-	self.ShieldSprite:SetKeyValue("angles","0 0 0")
-	self.ShieldSprite:SetKeyValue("rendermode","9")
-	self.ShieldSprite:SetKeyValue("renderamt","255")
-	self.ShieldSprite:SetKeyValue("rendercolor", "0 255 0")				
-	self.ShieldSprite:Spawn()	
-	self.ShieldSprite:SetParent(self.keepUpRightProp)
+	self:InitializeSprite()
 	
 	
 	self.JetSound = CreateSound(self,"weapons/rpg/rocket1.wav")
@@ -366,7 +386,7 @@ function ENT:PhysicsUpdate(physics)
 					if flying then
 						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetForward() *1000)
 					else
-						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetForward() *100)					
+						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetForward() *self.MoveSpeed)					
 					end
 					
 				elseif self.User:KeyDown(IN_BACK) then
@@ -376,7 +396,7 @@ function ENT:PhysicsUpdate(physics)
 					if flying then
 						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetForward() *-1000)
 					else
-						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetForward() *-100)					
+						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetForward() *-self.MoveSpeed)					
 					end				
 					
 				else
@@ -390,7 +410,7 @@ function ENT:PhysicsUpdate(physics)
 					if flying then
 						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetRight() *-1000)
 					else
-						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetRight() *-100)				
+						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetRight() *-self.MoveSpeed)				
 					end				
 					
 				elseif self.User:KeyDown(IN_MOVERIGHT) then
@@ -400,7 +420,7 @@ function ENT:PhysicsUpdate(physics)
 					if flying then
 						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetRight() *1000)
 					else
-						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetRight() *100)						
+						self.MechRagdoll:GetPhysicsObjectNum(0):ApplyForceCenter(self:GetRight() *self.MoveSpeed)						
 					end	
 					
 				else
@@ -522,24 +542,24 @@ function ENT:PhysicsUpdate(physics)
 				
 				--Missile
 				if self.wepType == 1 && self.ShootRockedDel < CurTime() then
-					self.ShootRockedDel = CurTime() +1
+					self.ShootRockedDel = CurTime() +self.RocketDelay
 					self:ShootRocket()
 					
 				--Grenade
 				elseif self.wepType == 2 && self.ShootGrenadeDel < CurTime() && self.GrenadeHeat < 10 then 
-					self.ShootGrenadeDel = CurTime() +0.25
+					self.ShootGrenadeDel = CurTime() +self.GrenadeDelay // 0.25
 					self.GrenadeHeat = self.GrenadeHeat +4
 					self:ShootGrenade()
 					
 					if self.GrenadeHeat > 10 then
-						self.ShootGrenadeDel = CurTime() +4
+						self.ShootGrenadeDel = CurTime() +self.GrenadeDelayHeated // 0.4
 						self:EmitSound("combine mech/OverHeat.wav",85,math.random(80,120))	
 					end	
 
 				--Missile storm
 				elseif self.wepType == 3 && self.ShootMissileStormDel < CurTime() then 
 					self.UseMissileStormDel = CurTime() +1
-					self.ShootMissileStormDel = CurTime() +20
+					self.ShootMissileStormDel = CurTime() +self.MissileStormDelay
 					
 					local tracedata = {}
 					tracedata.start = self.keepUpRightProp:GetPos() +self.keepUpRightProp:GetForward() *50 +Vector(0,0,-20)
@@ -551,23 +571,23 @@ function ENT:PhysicsUpdate(physics)
 					
 				--Machine gun /turret	
 				elseif self.wepType == 4 && self.MachineGunDel < CurTime() && self.GunHeatDel < CurTime() then 
-					self.MachineGunDel = CurTime() +0.05
+					self.MachineGunDel = CurTime() +self.MachineGunDelay
 					
 					if self.MachineGunHeat > 0 then
 						self:ShootBullet()
 					end
 					
-					self.MachineGunHeat = self.MachineGunHeat -5
+					self.MachineGunHeat = self.MachineGunHeat -self.MachineGunHeatDecay
 					
 					
 					if self.MachineGunHeat <= 0 then
-						self.GunHeatDel = CurTime() +2
+						self.GunHeatDel = CurTime() +self.MachineGunDelayHeated
 						self:EmitSound("combine mech/OverHeat.wav",85,math.random(80,120))							
 					end
 				
 				--Screamer
 				elseif self.wepType == 5 && self.ScreamerDel < CurTime() then 
-					self.ScreamerDel = CurTime() +15
+					self.ScreamerDel = CurTime() +self.ScreamerDelay
 					self.ScreamerFireDel = CurTime() +2
 					self.ShouldScreamer = true
 					self:EmitSound("combine mech/ScreamerChargeUp.wav",100,math.random(80,120))	
@@ -581,8 +601,8 @@ function ENT:PhysicsUpdate(physics)
 				--Laser
 				elseif self.wepType == 7 && self.LaserUseDel < CurTime() && self.HasUsedLaser == false then 		
 					self.HasUsedLaser = true
-					self.LaserUseDel = CurTime() +4
-					self.LaserShootDel = CurTime() +1
+					self.LaserUseDel = CurTime() +self.LaserDelay
+					self.LaserShootDel = CurTime() +self.LaserFireDelay
 					self.ChargeVortSound:Stop()
 					self.ChargeVortSound:Play()					
 				end
@@ -602,38 +622,7 @@ function ENT:PhysicsUpdate(physics)
 			
 			--Waiting for mech laser charge up
 			if self.LaserShootDel < CurTime() && self.HasUsedLaser == true then
-				self.HasUsedLaser = false
-				
-				self.ChargeVortSound:Stop()
-				self:EmitSound("npc/vort/attack_shoot.wav",100,math.random(80,120))	
-				
-				local sourcePos = self.keepUpRightProp:GetPos() +self.keepUpRightProp:GetForward() *50 +self.keepUpRightProp:GetUp() *-20
-				
-				local tracedata = {}
-				tracedata.start = sourcePos
-				tracedata.endpos = tracedata.start +(self.User:GetAimVector() *999999999999)
-				tracedata.filter =  { self, self.MechRagdoll, self.keepUpRightProp}
-				local trace = util.TraceLine(tracedata)				
-				
-				
-				// Shoot a bullet
-				local bullet = {}
-				bullet.Num 			= 1
-				bullet.Src 			= sourcePos
-				bullet.Dir 			= self.User:GetAimVector()
-				bullet.Spread 		= Vector(0,0,0)
-				bullet.Tracer		= 1
-				bullet.TracerName	= "NULL"
-				bullet.Force		= 50
-				bullet.Damage		= 200
-				bullet.Attacker 	= self.User		
-				
-				self:FireBullets(bullet)	
-							
-				local effectdata = EffectData()
-				effectdata:SetStart(sourcePos)
-				effectdata:SetOrigin(trace.HitPos)
-				util.Effect("SakLaserTracer", effectdata)			
+				self:FireLaser()		
 			end
 		
 			
@@ -1784,6 +1773,41 @@ function ENT:ShootBullet()
 	bullet.Damage		= 5
 	bullet.Attacker 	= self.User		
 	self:FireBullets(bullet)
+end
+
+function ENT:FireLaser()
+	self.HasUsedLaser = false
+		
+	self.ChargeVortSound:Stop()
+	self:EmitSound("npc/vort/attack_shoot.wav",100,math.random(80,120))	
+	
+	local sourcePos = self.keepUpRightProp:GetPos() +self.keepUpRightProp:GetForward() *50 +self.keepUpRightProp:GetUp() *-20
+	
+	local tracedata = {}
+	tracedata.start = sourcePos
+	tracedata.endpos = tracedata.start +(self.User:GetAimVector() *999999999999)
+	tracedata.filter =  { self, self.MechRagdoll, self.keepUpRightProp}
+	local trace = util.TraceLine(tracedata)				
+	
+	
+	// Shoot a bullet
+	local bullet = {}
+	bullet.Num 			= 1
+	bullet.Src 			= sourcePos
+	bullet.Dir 			= self.User:GetAimVector()
+	bullet.Spread 		= Vector(0,0,0)
+	bullet.Tracer		= 1
+	bullet.TracerName	= "NULL"
+	bullet.Force		= 50
+	bullet.Damage		= 200
+	bullet.Attacker 	= self.User		
+	
+	self:FireBullets(bullet)	
+				
+	local effectdata = EffectData()
+	effectdata:SetStart(sourcePos)
+	effectdata:SetOrigin(trace.HitPos)
+	util.Effect("SakLaserTracer", effectdata)	
 end
 
 function ENT:ShootScreamer()
