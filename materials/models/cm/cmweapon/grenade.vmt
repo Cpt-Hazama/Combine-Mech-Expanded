@@ -1,0 +1,10 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\CM/CMweapon/grenade"
+        "$bumpmap" "models\CM/CMweapon/grenade_n"
+ 	"$phong" "1"
+	"$phongexponent" "54.8"
+	"$phongboost"	"0.3"
+	"$phongfresnelranges"	"[.1 1 1]"
+	"$selfillum" 1
+}

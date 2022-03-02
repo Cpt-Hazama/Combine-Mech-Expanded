@@ -1,0 +1,9 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\CM/CMweapon/roket_ref"
+        "$bumpmap" "models\CM/CMweapon/roket_ref_n"
+ 	"$phong" "1"
+	"$phongexponent" "54.8"
+	"$phongboost"	"1.05"
+	"$phongfresnelranges"	"[.1 1 1]"
+}

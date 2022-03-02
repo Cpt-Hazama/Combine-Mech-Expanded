@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\CM/CbnMc/lamp"
+	"$halflambert" 1
+}
