@@ -84,7 +84,7 @@ function ENT:ShootRocket()
 end
 
 function ENT:ShootBullet()
-	self:EmitSound("^weapons/ar1/ar1_dist"..math.random(1,2)..".wav",75,math.random(80,120))	
+	self:EmitSound("^weapons/airboat/airboat_gun_energy"..math.random(1,2)..".wav",75,math.random(80,120))	
 
 	local pos = self.keepUpRightProp:GetPos() +self.keepUpRightProp:GetRight() *40 +self.keepUpRightProp:GetForward() *40 +self.keepUpRightProp:GetUp() *20
     local tracedata = {}
@@ -102,14 +102,15 @@ function ENT:ShootBullet()
 	bullet.TracerName	= "NULL"
 	bullet.Force		= 0
 	bullet.Damage		= 5
-	bullet.Attacker 	= self.User		
-	bullet.IgnoreEntity = self.MechRagdoll		
+	bullet.Attacker 	= self.User
+	bullet.IgnoreEntity = self.MechRagdoll
+    bullet.Callback = function(attacker, tr, dmginfo)
+        local effectdata = EffectData()
+        effectdata:SetStart(pos)
+        effectdata:SetOrigin(tr.HitPos)
+        util.Effect("SakLaserTracer", effectdata)
+    end
 	self:FireBullets(bullet)
-
-    local effectdata = EffectData()
-    effectdata:SetStart(pos)
-    effectdata:SetOrigin(trace.HitPos)
-    util.Effect("SakLaserTracer", effectdata)
 end
 
 function ENT:FireLaser()
@@ -137,12 +138,13 @@ function ENT:FireLaser()
 	bullet.TracerName	= "NULL"
 	bullet.Force		= 50
 	bullet.Damage		= 200
-	bullet.Attacker 	= self.User		
-	
-	self:FireBullets(bullet)	
-				
-	local effectdata = EffectData()
-	effectdata:SetStart(sourcePos)
-	effectdata:SetOrigin(trace.HitPos)
-	util.Effect("SakLaserTracer", effectdata)	
+	bullet.Attacker 	= self.User
+	bullet.IgnoreEntity = self.MechRagdoll
+    bullet.Callback = function(attacker, tr, dmginfo)
+        local effectdata = EffectData()
+        effectdata:SetStart(pos)
+        effectdata:SetOrigin(tr.HitPos)
+        util.Effect("SakLaserTracer", effectdata)
+    end
+	self:FireBullets(bullet)
 end

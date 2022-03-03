@@ -55,7 +55,7 @@ function ENT:Initialize()
                         ang.p = angles.p
                         ang.y = angles.y
                         angles = ang
-                        pos = pos +saw:GetForward() *50 +saw:GetUp() *-20
+                        pos = pos +saw:GetForward() *55 +saw:GetUp() *3
                         position = pos
                     end
                 end

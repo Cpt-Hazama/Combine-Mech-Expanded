@@ -1751,11 +1751,10 @@ function ENT:ShootMissileStorm()
 	
 end
 
-
 function ENT:ShootBullet()
 	self:EmitSound("^weapons/ar1/ar1_dist"..math.random(1,2)..".wav",75,math.random(80,120))	
 
-	local pos = self.keepUpRightProp:GetPos() +self.keepUpRightProp:GetForward() *50 +Vector(0,0,-20)
+	local pos = self.keepUpRightProp:GetPos() +self.keepUpRightProp:GetForward() *50 +Vector(0,0,-12)
 	local effectdata = EffectData()
 	effectdata:SetOrigin(pos)
 	effectdata:SetAngles(self.User:GetAimVector():Angle())
@@ -1768,10 +1767,17 @@ function ENT:ShootBullet()
 	bullet.Dir 			= self.User:GetAimVector()
 	bullet.Spread 		= Vector(0.03,0.03,0)
 	bullet.Tracer		= 1
-	bullet.TracerName	= "Tracer"
+	bullet.TracerName	= "NULL"
 	bullet.Force		= 0
 	bullet.Damage		= 5
-	bullet.Attacker 	= self.User		
+	bullet.Attacker 	= self.User
+	bullet.IgnoreEntity = self.MechRagdoll
+    bullet.Callback = function(attacker, tr, dmginfo)
+        local effectdata = EffectData()
+        effectdata:SetStart(pos)
+        effectdata:SetOrigin(tr.HitPos)
+        util.Effect("mech_tracer", effectdata)
+    end
 	self:FireBullets(bullet)
 end
 
@@ -1800,14 +1806,15 @@ function ENT:FireLaser()
 	bullet.TracerName	= "NULL"
 	bullet.Force		= 50
 	bullet.Damage		= 200
-	bullet.Attacker 	= self.User		
-	
-	self:FireBullets(bullet)	
-				
-	local effectdata = EffectData()
-	effectdata:SetStart(sourcePos)
-	effectdata:SetOrigin(trace.HitPos)
-	util.Effect("SakLaserTracer", effectdata)	
+	bullet.Attacker 	= self.User
+	bullet.IgnoreEntity = self.MechRagdoll
+    bullet.Callback = function(attacker, tr, dmginfo)
+        local effectdata = EffectData()
+        effectdata:SetStart(pos)
+        effectdata:SetOrigin(tr.HitPos)
+        util.Effect("SakLaserTracer", effectdata)
+    end
+	self:FireBullets(bullet)
 end
 
 function ENT:ShootScreamer()

@@ -19,9 +19,14 @@ function ENT:InitializeConVars()
 end
 
 function ENT:ShootBullet()
-	self:EmitSound("^weapons/ar1/ar1_dist"..math.random(1,2)..".wav",75,math.random(80,120))	
+	self:EmitSound("^weapons/smg1/smg1_fire1.wav",75,math.random(80,120))	
 
 	local pos = self.keepUpRightProp:GetPos() +self.keepUpRightProp:GetRight() *40 +self.keepUpRightProp:GetForward() *45 +self.keepUpRightProp:GetUp() *20
+	local effectdata = EffectData()
+	effectdata:SetOrigin(pos)
+	effectdata:SetAngles(self.User:GetAimVector():Angle())
+	effectdata:SetScale(3)
+	util.Effect("MuzzleEffect", effectdata)
 
 	local bullet = {}
 	bullet.Num 			= 1
@@ -29,12 +34,19 @@ function ENT:ShootBullet()
 	bullet.Dir 			= self.User:GetAimVector()
 	bullet.Spread 		= Vector(0.03,0.03,0)
 	bullet.Tracer		= 1
-	bullet.TracerName	= "lfs_tracer_white"
+	bullet.TracerName	= "NULL"
 	bullet.Force		= 0
 	bullet.Damage		= 5
 	bullet.Attacker 	= self.User		
-	bullet.IgnoreEntity = self.MechRagdoll		
+	bullet.IgnoreEntity = self.MechRagdoll
+    bullet.Callback = function(attacker, tr, dmginfo)
+        local effectdata = EffectData()
+        effectdata:SetStart(pos)
+        effectdata:SetOrigin(tr.HitPos)
+        util.Effect("mech_tracer", effectdata)
+    end
 	self:FireBullets(bullet)
+
 end
 		
 function ENT:ShootRocket()
