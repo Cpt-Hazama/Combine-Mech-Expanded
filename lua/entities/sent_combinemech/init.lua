@@ -1787,10 +1787,10 @@ function ENT:FireLaser()
 	self.ChargeVortSound:Stop()
 	self:EmitSound("npc/vort/attack_shoot.wav",100,math.random(80,120))	
 	
-	local sourcePos = self.keepUpRightProp:GetPos() +self.keepUpRightProp:GetForward() *50 +self.keepUpRightProp:GetUp() *-20
+	local pos = self.keepUpRightProp:GetPos() +self.keepUpRightProp:GetForward() *50 +self.keepUpRightProp:GetUp() *-20
 	
 	local tracedata = {}
-	tracedata.start = sourcePos
+	tracedata.start = pos
 	tracedata.endpos = tracedata.start +(self.User:GetAimVector() *999999999999)
 	tracedata.filter =  { self, self.MechRagdoll, self.keepUpRightProp}
 	local trace = util.TraceLine(tracedata)				
@@ -1799,7 +1799,7 @@ function ENT:FireLaser()
 	// Shoot a bullet
 	local bullet = {}
 	bullet.Num 			= 1
-	bullet.Src 			= sourcePos
+	bullet.Src 			= pos
 	bullet.Dir 			= self.User:GetAimVector()
 	bullet.Spread 		= Vector(0,0,0)
 	bullet.Tracer		= 1

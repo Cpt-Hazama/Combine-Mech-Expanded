@@ -142,7 +142,7 @@ function ENT:FireLaser()
 	bullet.IgnoreEntity = self.MechRagdoll
     bullet.Callback = function(attacker, tr, dmginfo)
         local effectdata = EffectData()
-        effectdata:SetStart(pos)
+        effectdata:SetStart(sourcePos)
         effectdata:SetOrigin(tr.HitPos)
         util.Effect("SakLaserTracer", effectdata)
     end
